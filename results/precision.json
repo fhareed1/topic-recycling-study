@@ -1,10 +1,10 @@
 {
   "annotators": {
-    "abdullah": 200,
+    "annotator-b": 200,
     "fareed": 199
   },
   "agreement": {
-    "abdullah~fareed": {
+    "annotator-b~fareed": {
       "n": 199,
       "raw": 0.819,
       "cohen_kappa": 0.507
