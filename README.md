@@ -3,8 +3,7 @@
 A measurement study of how much the catalogues of Nigerian "project topics and materials"
 websites overlap with each other, and with theses deposited in a university repository.
 
-**Status (2026-09-14):** harvest and matching complete. Human labelling of match precision is
-**not yet done**, so every rate below at Jaccard below 1.0 is an unvalidated upper bound.
+**Status (2026-09-17):** harvest, matching and two-annotator labelling complete.
 
 ## Data
 
@@ -28,16 +27,36 @@ robots.txt disallows AI crawlers. Details in [ETHICS.md](ETHICS.md).
 3. Every candidate is scored by **exact** Jaccard on token sets. LSH affects recall only.
 4. A title "has a match" in a group if any other title there scores at or above the threshold.
    Rates carry Wilson 95% intervals.
-5. A stratified sample of 200 cross-source pairs (40 per Jaccard band) is labelled by two
-   annotators ([LABELLING.md](LABELLING.md)) to estimate precision per band.
+5. A stratified sample of 200 cross-source pairs (40 per Jaccard band) is labelled independently
+   by two annotators ([LABELLING.md](LABELLING.md)) to estimate precision per band. Band order is
+   shuffled and the similarity score is hidden from the labeller.
 
 ## Results so far
 
 All numbers come from `results/summary.json` (full view unless stated).
 
-**Cross-site overlap.** 40.3% (95% CI 39.8 to 40.8; 15,062 of 37,376) of sale listings have an
-*identical* normalised title on another sale site. At Jaccard 0.8 this rises to 44.8%, and to
-52.8% in the `core` view. Identical matches need no labelling to trust; the higher figures do.
+**Matcher precision (200 pairs, two annotators).** From `results/precision.json`:
+
+| Threshold | Precision (agreed pairs) | Precision (disagreements counted wrong) | Annotator agreement in band |
+|---|---|---|---|
+| >= 0.9 | 1.000 (0.910 to 1.000) | 0.974 (0.868 to 0.995) | 97.4% |
+| >= 0.8 | 0.987 (0.931 to 0.998) | 0.962 (0.894 to 0.987) | 97.5% |
+| >= 0.7 | 0.972 (0.921 to 0.991) | 0.874 (0.802 to 0.922) | 75.0% |
+| >= 0.6 | 0.898 (0.836 to 0.938) | 0.767 (0.696 to 0.826) | 72.5% |
+| >= 0.5 | 0.817 (0.751 to 0.869) | 0.668 (0.600 to 0.730) | 67.5% |
+
+Overall agreement was 81.9% (Cohen's kappa 0.507, n=199), but that single figure hides the
+pattern that matters: the annotators disagreed on 13, 11 and 10 of 40 pairs in the 0.5, 0.6 and
+0.7 bands, and on 1 of 40 and 1 of 39 in the 0.8 and 0.9 bands. **Jaccard 0.8 is therefore the
+operating threshold**; below it, humans cannot agree either, so the matcher is not the limitation.
+Kappa is also depressed at high bands because almost every pair there is a true match, which
+leaves little variance for chance correction.
+
+**Cross-site overlap.** At the 0.8 operating threshold, **44.8% of sale listings (95% CI 44.3 to
+45.3; 16,752 of 37,376) have a same-topic match on another sale site**, and 52.8% in the `core`
+view. Discounting by the conservative precision at that threshold gives roughly 43% as a floor.
+40.3% (CI 39.8 to 40.8) have an *identical* normalised title elsewhere, which needs no labelling
+at all.
 
 **Consolidation.** Joining listings at Jaccard 0.9 or above, 37,376 listings collapse to 27,325
 distinct titles. 4,957 are listed on two sites and 1,164 on all three.
@@ -65,7 +84,12 @@ theses being resold, but 4 cases cannot support a rate.
 - One repository, mostly postgraduate, is a poor reference population for undergraduate topics.
   An undergraduate project repository is the most important missing comparison.
 - Template topics ("effect of X on academic performance") score 0.5 to 0.6 while being different
-  projects; this is why the headline uses identical matches until precision is labelled.
+  projects, and the annotators agreed on only about 70% of those pairs. Rates below Jaccard 0.8
+  are reported but should not be quoted as recycling.
+- Precision is measured; **recall is not**. LSH and the 4-word minimum can both miss true pairs,
+  so every rate here is a lower bound on topic reuse.
+- Two annotators, one of them the author, is the minimum credible setup. A third independent
+  labeller would strengthen it.
 
 ## Reproduce
 

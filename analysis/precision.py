@@ -77,6 +77,26 @@ def main():
         str(t): wilson(sum(l for b, v in by_band.items() if b >= t for l in v), sum(len(v) for b, v in by_band.items() if b >= t))
         for t in sorted(by_band)
     }
+
+    # Where annotators disagreed, and the same precision with every disagreement counted as a
+    # wrong match. Consensus-only precision is optimistic because it drops the hard pairs.
+    labelled_by_both = [p for p in bands if all(p in labels[a] for a in labels)]
+    band_stats = defaultdict(lambda: [0, 0])
+    for pair in labelled_by_both:
+        values = [labels[a][pair] for a in labels]
+        band_stats[bands[pair]][0] += 1
+        if len(set(values)) > 1:
+            band_stats[bands[pair]][1] += 1
+    report["agreement_by_band"] = {
+        str(b): {"n": n, "disagreements": d, "raw": round(1 - d / n, 3)} for b, (n, d) in sorted(band_stats.items())
+    }
+    report["conservative_precision_at_or_above"] = {
+        str(t): wilson(
+            sum(1 for p in labelled_by_both if bands[p] >= t and consensus.get(p) == 1),
+            sum(1 for p in labelled_by_both if bands[p] >= t),
+        )
+        for t in sorted(band_stats)
+    }
     (RESULTS / "precision.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
 
